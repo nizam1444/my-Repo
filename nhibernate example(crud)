@@ -1,0 +1,115 @@
+//add
+public void Add(Character newCharacter)
+        {
+            using (ISession session = NHibernateHelper.OpenSession())
+            {
+                using (ITransaction transaction = session.BeginTransaction())
+                {
+                    session.Save(newCharacter);
+                    transaction.Commit();
+                }
+            }
+            
+            //get
+            
+            public Character GetCharacterByName(string name)
+        {
+            using (ISession session = NHibernateHelper.OpenSession())
+            {
+                var result = session.QueryOver<Character>().Where(x => x.Name == name).SingleOrDefault();
+                return result ?? new Character();
+            }
+        }
+        //update
+        
+         public void Update(Character newCharacter)
+        {
+            using (ISession session = NHibernateHelper.OpenSession())
+            {
+                using (ITransaction transaction = session.BeginTransaction())
+                {
+                    session.Update(newCharacter);
+                    transaction.Commit();
+                }
+            }
+        }
+        
+        //del
+        
+         public void Delete(Character newCharacter)
+        {
+            using (ISession session = NHibernateHelper.OpenSession())
+            {
+                using (ITransaction transaction = session.BeginTransaction())
+                {
+                    session.Delete(newCharacter);
+                    transaction.Commit();
+                }
+            }
+        }
+        //nhibernatehelper
+        
+         public class NHibernateHelper
+    {
+        private static ISessionFactory _sessionFactory;
+
+        private static ISessionFactory SessionFactory
+        {
+            get
+            {
+                if (_sessionFactory == null)
+                {
+                    var configuration = new Configuration();
+                    configuration.Configure();
+                    configuration.AddAssembly(typeof(Character).Assembly);
+                    _sessionFactory = configuration.BuildSessionFactory();
+                }
+                return _sessionFactory;
+            }
+        }
+
+        public static ISession OpenSession()
+        {
+            return SessionFactory.OpenSession();
+        }
+
+    }
+    
+    //console pgm to use all the above methodes.
+    
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            LoadNHibernateCfg();
+
+            /* CRUD */
+            CharacterRepository repo = new CharacterRepository();
+
+            //CREATE!
+            var MikeAbyss = new Character { Name = "MikeAbyss", HealthPoints = 700, Mana = 10, Profession = "Knight" };
+            repo.Add(MikeAbyss);
+
+            //READ!
+            Character mike = repo.GetCharacterByName("MikeAbyss");
+
+            //UPDATE!
+            mike.Name = "Mike";
+            repo.Update(mike);
+
+            //DELETE!
+            repo.Delete(mike);
+
+            Console.ReadKey();
+        }
+
+        public static void LoadNHibernateCfg()
+        {
+            var cfg = new Configuration();
+            cfg.Configure();
+            cfg.AddAssembly(typeof(Character).Assembly);
+            new SchemaExport(cfg).Execute(true, true, false);
+        }
+
+    }
+        
